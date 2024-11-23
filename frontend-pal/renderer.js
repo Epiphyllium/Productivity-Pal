@@ -13,6 +13,7 @@ taskForm.addEventListener('submit', (event) => {
     name: document.getElementById('task-name').value.trim(),
     description: document.getElementById('task-desc').value.trim(),
     dueDate: document.getElementById('due-date').value.trim(),
+    reDate: document.getElementById('re-date').value.trim(),
   };
 
   console.log('Task Data:', taskData);

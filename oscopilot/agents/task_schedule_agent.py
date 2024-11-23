@@ -11,8 +11,8 @@ class TaskScheduleAgent:
         self.deadline_db = DeadlineDatabase("Deadlines")
      
 
-    def set_reschedule_time(self, reschedule_time):
-        self.rescheduler = Rescheduler(user_id=1, reschedule_time=reschedule_time)
+    def set_reschedule_time(self, user_id,reschedule_time):
+        self.rescheduler = Rescheduler(user_id, reschedule_time=reschedule_time)
 
     def schedule_task(self, user_id, task_name,description,deadline):
         deadline=int(datetime.datetime.strptime(deadline, "%Y-%m-%d %H:%M:%S").timestamp())
@@ -43,13 +43,13 @@ class TaskScheduleAgent:
             start_datetime_str = f'{task["Date"]} {task["StartTime"]}'
             end_datetime_str = f'{task["Date"]} {task["EndTime"]}'
 
-            start_timestamp = int(datetime.datetime.strptime(start_datetime_str, "%Y-%m-%d %I:%M %p").timestamp())
-            end_timestamp = int(datetime.datetime.strptime(end_datetime_str, "%Y-%m-%d %I:%M %p").timestamp())
+            start_timestamp = int(datetime.datetime.strptime(start_datetime_str, "%Y-%m-%d %H:%M").timestamp())
+            end_timestamp = int(datetime.datetime.strptime(end_datetime_str, "%Y-%m-%d %H:%M").timestamp())
 
             add_task["Title"]=task["Task"]
             add_task["Status"]=0
             add_task["Parent Task"]= [id]
-            add_task["Start"]=start_timestamp
+            add_task["Start Time"]=start_timestamp
             add_task["Deadline"]=end_timestamp
 
             subtask_id=self.deadline_db.insert_one_task(add_task,user_id,1,times_format="")
@@ -59,11 +59,13 @@ class TaskScheduleAgent:
         self.deadline_db.update_status(user_id,id,1)
         return 
     
-    def reschedule_task(self,user_id, reschedule_time):
-        tasks=self.rescheduler.get_tasks_to_reschedule()
+    def reschedule_task(self):
+        # 获取需要重新调度的任务
+        tasks,ids=self.rescheduler.get_tasks_to_reschedule()
+        # 获取大任务deadline
+        schedule=self.task_planner.schedule_task(self.rescheduler.user_id, tasks, self.rescheduler.reschedule_time, deadline)
+        self.task_planner.execute_schedule_with_applescript(schedule)
 
-if __name__=="__main__":
-    agent=TaskScheduleAgent()
-    task_name = "Financial Fraud Presentation"
-    task_description = "Prepare a presentation on financial fraud for the upcoming conference." 
-    agent.schedule_task(2,task_name,task_description,"2024-11-30 23:59:59")
+        # 更新小人物的起始结束时间
+
+        return 
