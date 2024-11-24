@@ -16,7 +16,7 @@ class Rescheduler(BaseModule):
     def __init__(self, user_id, reschedule_time):
         super().__init__()
         self.user_id = user_id
-        self.reschedule_time = datetime.strptime(reschedule_time, "%Y-%m-%d %H:%M")
+        self.reschedule_time = datetime.strptime(reschedule_time, "%Y-%m-%d %H:%M:%S")
         self.daily_log_db = DailyLogDatabase("DailyLogs")
         self.deadline_db = DeadlineDatabase("Deadlines")
 
@@ -24,23 +24,40 @@ class Rescheduler(BaseModule):
         """获取需要重新调度的任务"""
         try:
             reschedule_timestamp = int(self.reschedule_time.timestamp())
-            tasks_need_reschedule = self.deadline_db.get_tasks_need_to_reschedule(user_id=self.user_id, reschedule_time=reschedule_timestamp,need_to_prompt=False)
+            tasks_need_reschedule = self.deadline_db.get_tasks_need_to_reschedule(
+                user_id=self.user_id,
+                reschedule_time=reschedule_timestamp,
+                need_to_prompt=False
+            )
+
+            ids={i["_id"]:i["Parent task"] for i in tasks_need_reschedule}
+
+
             # 转换任务格式
-            structured_tasks = []
+            structured_tasks = {}
             for task in tasks_need_reschedule:
                 if "Start Time" in task and "Deadline" in task:
                     start_time = task["Start Time"]
                     deadline = task["Deadline"]
-                    duration_hours = (deadline - start_time).total_seconds() / 3600
-                    structured_tasks.append({
-                        "Title": task.get("Title", "Unnamed Task"),
-                        "Description": task.get("Description", "No Description"),
-                        "Estimated Duration": f"{duration_hours:.2f} hours"
-                    })
-            return structured_tasks
+
+                    # 如果 start_time 和 deadline 是 Unix 时间戳
+                    if isinstance(start_time, int) and isinstance(deadline, int):
+                        duration_hours = (deadline - start_time) / 3600  # 秒数差直接除以 3600 转小时
+                    else:
+                        # 如果是字符串时间，需要先解析为 datetime 对象
+                        start_time = datetime.strptime(start_time, "%Y-%m-%d %H:%M")
+                        deadline = datetime.strptime(deadline, "%Y-%m-%d %H:%M")
+                        duration_hours = (deadline - start_time).total_seconds() / 3600
+
+                    # structured_tasks.append({
+                    #     "Task": task.get("Title", "Unnamed Task"),
+                    #     "Duration": f"{duration_hours:.2f} hours"
+                    # })
+                    structured_tasks[task.get("Title", "Unnamed Task")] = f"{duration_hours:.2f} hours"
+            return structured_tasks, ids
         except Exception as e:
             print(f"Error retrieving tasks for rescheduling: {e}")
-            return []
+            return [],[]
 
     def reschedule_tasks(self, tasks, start_time, deadline):
         """生成新任务计划"""

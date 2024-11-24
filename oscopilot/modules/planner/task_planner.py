@@ -43,12 +43,15 @@ class TaskPlanner(BaseModule):
         try:
             # Step1: 获取日历中deadline前存在的事件
             events=self.appleScript.get_calendar_events(deadline)
+            print (events)
             
             # Step2: 获取用户最近7天的习惯
             # 返回一个json字段，Habits: 一个包含 Pattern 和 Description 的列表，说明用户的具体习惯和对应描述；Behavioral Tendencies: 一个包含 Observation 和 Details 的列表，描述用户行为模式的观察和细节
             habits={}
             for key in task_dict:
                 habits[key]= self.habit_tracker.get_habit_about_certain_task(user_id, task=key, top_k=5)
+            
+            print(habits)
 
             # Step3: 构建提示内容
             sys_prompt = self.prompt['_SYSTEM_TASK_SCHEDULE_PROMPT']

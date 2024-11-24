@@ -120,6 +120,15 @@ input[type="date"] {
   border-radius: 8px;
   box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
 }
+input[type="re-date"] {
+  flex: 1;
+  padding: 8px;
+  font-size: 1em;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
 
 button {
   padding: 10px 20px;
@@ -146,17 +155,21 @@ button:hover {
     <form id="task-form">
         <div class="form-group">
             <label for="task-name">Task Name</label>
-            <input type="text" id="task-name" required>
+            <input type="text" id="task-name">
         </div>
         <div class="form-group">
             <label for="task-desc">Description</label>
-            <input type="text" id="task-desc" required>
+            <input type="text" id="task-desc">
         </div>
         <div class="form-group">
             <label for="due-date">Due Date</label>
-            <input type="date" id="due-date" required>
+            <input type="date" id="due-date">
         </div>
-        <button type="submit">Confirm</button>
+        <div class="form-group">
+          <label for="ReSchedule-date">ReSchedule Date</label>
+          <input type="date" id="re-date">
+      </div>
+        <button type="submit">(Re) Schedule</button>
     </form>
     <script src="renderer.js"></script>
 </body>
