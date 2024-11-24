@@ -12,16 +12,19 @@ async def handle_websocket(websocket):  # 添加 path 参数
     try:
         async for message in websocket:
             data = json.loads(message)
-            dueDate=data['dueDate']+" 23:59:59"
-            print(dueDate)
-            agent.schedule_task(3, data['name'], data['description'], dueDate)
+            if data["dueDate"]!="":
+                dueDate=data['dueDate']+" 23:59:59"
+                print(dueDate)
+                agent.schedule_task(3, data['name'], data['description'], dueDate)
+            elif data["reDate"]!="":
+                reDate=data["reDate"]+" 23:59:59"
+                agent.set_reschedule_time(user_id=3,reschedule_time=reDate)
+                agent.reschedule_task()
             print("收到任务数据:")
             print(f"任务名: {data['name']}")
             print(f"任务描述: {data['description']}")
             print(f"截止日期: {data['dueDate']}")
-            print(f"提醒时间: {data['reDate']}")
-
-            
+            print(f"提醒时间: {data['reDate']}")          
             # 发送确认消息给客户端
             await websocket.send(json.dumps({"status": "success"}))
     except Exception as e:
