@@ -92,10 +92,10 @@ class AppleScript():
         return applescript
 
     # combine the two scripts functions
-    def     add_event(self,event_title, event_date, event_start_time, event_end_time):
+    def add_event(self,event_title, event_date, event_start_time, event_end_time):
         reminder_script = self.create_reminder_script(event_title, event_date, event_start_time)
         event_script = self.create_event_script(event_title, event_date, event_start_time, event_end_time)
-        # self.run_applescript(reminder_script)
+        self.run_applescript(reminder_script)
         self.run_applescript(event_script)
 
     # 入参是开始日期和结束日期，输出是 已完成的提醒事项 。输出需要split(", ")处理
