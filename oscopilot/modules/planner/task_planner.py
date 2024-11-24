@@ -50,6 +50,8 @@ class TaskPlanner(BaseModule):
             habits={}
             for key in task_dict:
                 habits[key]= self.habit_tracker.get_habit_about_certain_task(user_id, task=key, top_k=5)
+            
+            print(habits)
 
             # Step3: 构建提示内容
             sys_prompt = self.prompt['_SYSTEM_TASK_SCHEDULE_PROMPT']
