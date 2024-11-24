@@ -77,13 +77,13 @@ taskPlannerPrompt = {
             [
             {
                 "Event": "Meeting",
-                "StartTime": "2023-11-17 10:00 AM",
-                "EndTime": "2023-11-17 11:00 AM"
+                "StartTime": "2023-11-17 10:00",
+                "EndTime": "2023-11-17 11:00"
             },
             {
                 "Event": "Lunch with Friend",
-                "StartTime": "2023-11-18 12:00 PM",
-                "EndTime": "2023-11-18 1:00 PM"
+                "StartTime": "2023-11-18 12:00",
+                "EndTime": "2023-11-18 13:00"
             }
             ]
             
@@ -110,6 +110,8 @@ taskPlannerPrompt = {
 
         - **Optimize Efficiency**: Distribute tasks efficiently, possibly grouping shorter tasks together.
 
+        - **Use 24-Hour Time Format**
+
         - **Output Format**:
 
         - Provide the schedule as a JSON array.
@@ -120,9 +122,9 @@ taskPlannerPrompt = {
 
             - `"Date"`: The scheduled date in "YYYY-MM-DD" format.
 
-            - `"StartTime"`: The start time in "hh:mm AM/PM" format.
+            - `"StartTime"`: The start time in "hh:mm" 24-hour time format.
 
-            - `"EndTime"`: The end time in "hh:mm AM/PM" format.
+            - `"EndTime"`: The end time in "hh:mm" 24-hour time format.
 
         - **Example**:
         generate a detailed schedule in JSON format that fits all tasks into available time slots without conflicts.
@@ -132,32 +134,32 @@ taskPlannerPrompt = {
             {
             "Task": "Prepare presentation slides - Group Discussion",
             "Date": "2023-11-17",
-            "StartTime": "02:00 PM",
-            "EndTime": "04:00 PM"
+            "StartTime": "14:00",
+            "EndTime": "16:00"
             },
             {
             "Task": "Prepare presentation slides - Material Collection",
             "Date": "2023-11-18",
-            "StartTime": "10:00 AM",
-            "EndTime": "12:00 PM"
+            "StartTime": "10:00",
+            "EndTime": "12:00"
             },
             {
             "Task": "Prepare presentation slides - Sort out Material",
             "Date": "2023-11-19",
-            "StartTime": "01:00 PM",
-            "EndTime": "03:00 PM"
+            "StartTime": "13:00",
+            "EndTime": "15:00"
             },
             {
             "Task": "Prepare presentation slides - Make PowerPoint",
             "Date": "2023-11-20",
-            "StartTime": "09:00 AM",
-            "EndTime": "12:00 PM"
+            "StartTime": "09:00",
+            "EndTime": "12:00"
             },
             {
             "Task": "Prepare presentation slides - Final Presentation",
             "Date": "2023-11-20",
-            "StartTime": "02:00 PM",
-            "EndTime": "03:00 PM"
+            "StartTime": "14:00",
+            "EndTime": "15:00"
             }
         ]
 
