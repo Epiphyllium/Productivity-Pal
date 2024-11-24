@@ -851,6 +851,43 @@ class DeadlineDatabase(Database):
             print("Update Deadline Error:", e)
             return False
 
+    def update_rescheduled_task(self,user_id,document_id,new_start_time,new_deadline,new_status,time_format = ""):
+        """
+        Updates the start time, deadline, and status of a task or subtask.
+        user_id (int): The user ID associated with the task.
+        document_id (str): The ID of the task or subtask to update.
+        new_start_time (str): The new start time to set.
+        new_deadline (str): The new deadline date in timestamp format.
+        new_status (int): The new status value to set.
+        time_format (str): The format of the new start time and deadline. e.g., "%Y%m%d%H%M"
+        """
+        try:
+            if time_format != "":
+                new_start_time = self.date_to_timestamp(new_start_time, time_format)
+                new_deadline = self.date_to_timestamp(new_deadline, time_format)
+            result = self.collection.update_one(
+                {
+                    "_id": ObjectId(document_id),
+                    "user_id": user_id
+                },
+                {
+                    "$set": {
+                        "Start Time": new_start_time,
+                        "Deadline": new_deadline,
+                        "Status": new_status
+                    }
+                }
+            )
+            if result.modified_count > 0:
+                print("Task updated successfully.")
+                return True
+            else:
+                print("No matching document found.")
+                return False
+        except Exception as e:
+            print("Update Task Error:", e)
+            return False
+
     # ----------------------------- delete --------------------------------
     def delete_task(self,user_id,document_id):
         """
@@ -947,9 +984,12 @@ if __name__ == '__main__':
     #     id = database.insert_one_task(deadline, 1, 0)
     #     print(id)
 
-    deadlines_db = DeadlineDatabase("Deadlines")
-    id = "67404416e8169705f9374a79"
-    result = deadlines_db.find_by_id(id)
-    print(result)
+    # deadlines_db = DeadlineDatabase("Deadlines")
+    # id = "67404416e8169705f9374a79"
+    # result = deadlines_db.find_by_id(id)
+    # print(result)
     # uuid = deadlines_db.insert_one_task(deadline, 1, 0)
+
+    deadlines_db = DeadlineDatabase("Deadlines")
+    deadlines_db.update_rescheduled_task(2, "674199564453b485732c7734", "202411241200", "202411261300", 1, "%Y%m%d%H%M")
 
