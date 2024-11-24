@@ -14,13 +14,12 @@ class AppleScript():
         if process.returncode == 0:
             print("操作成功!")
             return output.decode().strip()
-        # else:
-        #     print(f"操作失败: {error.decode()}")
-
+        else:
+            print(f"操作失败: {error.decode()}")
 
     def create_reminder_script(self,title, date, time):
         date_obj = datetime.strptime(date, "%Y-%m-%d")
-        # formatted_date = date_obj.strftime("%A, %B %d, %Y")
+        formatted_date = date_obj.strftime("%B %d, %Y")
         applescript = f'''
         on createReminder(reminderTitle, reminderDate, reminderTime)
             tell application "Reminders"
@@ -29,7 +28,7 @@ class AppleScript():
             end tell
         end createReminder
 
-        createReminder("{title}", "{date}", "{time}")
+        createReminder("{title}", "{formatted_date}", "{time}")
         '''
         return applescript
 
@@ -45,30 +44,45 @@ class AppleScript():
         on createEvent(eventTitle, eventYear, eventMonth, eventDay, eventStartTime, eventEndTime)
             tell application "Calendar"
                 tell calendar "Home"
-                    -- 设置开始日期
-                    set my_start_date to current date
-                    set year of my_start_date to {year} as integer
-                    set month of my_start_date to {month} as integer
-                    set day of my_start_date to {day} as integer
-
-                    -- 解析开始时间
-                    set hours to (text 1 thru 2 of eventStartTime) as integer
-                    set minutes to (text 4 thru 5 of eventStartTime) as integer
-                    set time of my_start_date to (hours * 3600 + minutes * 60)
-
-                    -- 设置结束日期
-                    set my_end_date to current date
-                    set year of my_end_date to {year} as integer
-                    set month of my_end_date to {month} as integer
-                    set day of my_end_date to {day} as integer
-
-                    -- 解析结束时间
-                    set hours to (text 1 thru 2 of eventEndTime) as integer
-                    set minutes to (text 4 thru 5 of eventEndTime) as integer
-                    set time of my_end_date to (hours * 3600 + minutes * 60)
-
-                    -- 创建事件
-                    make new event with properties {{summary:eventTitle, start date:my_start_date, end date:my_end_date}}
+                -- 设置开始日期
+                set my_start_date to current date
+                set year of my_start_date to eventYear as integer
+                set month of my_start_date to eventMonth as integer
+                set day of my_start_date to eventDay as integer
+                
+                -- 解析开始时间
+                set start_hours to (text 1 thru 2 of eventStartTime) as integer
+                set start_minutes to (text 4 thru 5 of eventStartTime) as integer
+                if eventStartTime contains "PM" and start_hours ≠ 12 then
+                    set start_hours to start_hours + 12
+                else if eventStartTime contains "AM" and start_hours = 12 then
+                    set start_hours to 0
+                end if
+                set time of my_start_date to (start_hours * 3600 + start_minutes * 60)
+                
+                -- 设置结束日期
+                set my_end_date to current date
+                set year of my_end_date to eventYear as integer
+                set month of my_end_date to eventMonth as integer
+                set day of my_end_date to eventDay as integer
+                
+                -- 解析结束时间
+                set end_hours to (text 1 thru 2 of eventEndTime) as integer
+                set end_minutes to (text 4 thru 5 of eventEndTime) as integer
+                if eventEndTime contains "PM" and end_hours ≠ 12 then
+                    set end_hours to end_hours + 12
+                else if eventEndTime contains "AM" and end_hours = 12 then
+                    set end_hours to 0
+                end if
+                set time of my_end_date to (end_hours * 3600 + end_minutes * 60)
+                
+                -- 检查时间逻辑
+                if my_start_date ≥ my_end_date then
+                    error "Start time must be earlier than end time."
+                end if
+                
+                -- 创建事件
+                make new event with properties {{summary:eventTitle, start date:my_start_date, end date:my_end_date}}
                 end tell
             end tell
         end createEvent
@@ -78,10 +92,10 @@ class AppleScript():
         return applescript
 
     # combine the two scripts functions
-    def     add_event(self,event_title, event_date, event_start_time, event_end_time):
+    def add_event(self,event_title, event_date, event_start_time, event_end_time):
         reminder_script = self.create_reminder_script(event_title, event_date, event_start_time)
         event_script = self.create_event_script(event_title, event_date, event_start_time, event_end_time)
-        # self.run_applescript(reminder_script)
+        self.run_applescript(reminder_script)
         self.run_applescript(event_script)
 
     # 入参是开始日期和结束日期，输出是 已完成的提醒事项 。输出需要split(", ")处理
@@ -197,15 +211,17 @@ class AppleScript():
         return date_formatted, datetime_str
 
 if __name__ == "__main__":
-    # eventName = "会议"
-    # eventDate = "2024-11-20"
-    # eventStartTime = "10:00 AM"
-    # eventEndTime = "11:00 AM"
-    # reminder_script = create_reminder_script(eventName, eventDate, eventStartTime)
-    # event_script = create_event_script(eventName, eventDate, eventStartTime, eventEndTime)
+    eventName = "会议"
+    eventDate = "2024-11-25"
+    eventStartTime = "10:00"
+    eventEndTime = "14:00"
+    asp = AppleScript()
+    reminder_script = asp.create_reminder_script(eventName, eventDate, eventStartTime)
+    event_script = asp.create_event_script(eventName, eventDate, eventStartTime, eventEndTime)
+    asp.run_applescript(reminder_script)
+    asp.run_applescript(event_script)
     # get_reminder_script=get_completed_reminders("2020-11-01", "2024-11-30")
     # get_uncompleted_reminders_script = get_uncompleted_reminders()
     # print(run_applescript(get_reminder_script).split(", "))
     # print(run_applescript(get_uncompleted_reminders_script).split(", "))
     # print(get_calendar_events("2024-11-30 23:59:59"))
-    pass
