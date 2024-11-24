@@ -19,7 +19,7 @@ class AppleScript():
 
     def create_reminder_script(self,title, date, time):
         date_obj = datetime.strptime(date, "%Y-%m-%d")
-        formatted_date = date_obj.strftime("%B %d, %Y")
+        # formatted_date = date_obj.strftime("%A, %B %d, %Y")
         applescript = f'''
         on createReminder(reminderTitle, reminderDate, reminderTime)
             tell application "Reminders"
@@ -28,7 +28,7 @@ class AppleScript():
             end tell
         end createReminder
 
-        createReminder("{title}", "{formatted_date}", "{time}")
+        createReminder("{title}", "{date}", "{time}")
         '''
         return applescript
 

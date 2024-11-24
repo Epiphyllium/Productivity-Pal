@@ -2,6 +2,7 @@ from oscopilot.modules.planner.task_planner import TaskPlanner
 from oscopilot.modules.schedule_maker.rescheduler import Rescheduler
 import datetime
 from oscopilot.utils.database import DailyLogDatabase, DeadlineDatabase
+import time
 
 
 
@@ -61,11 +62,28 @@ class TaskScheduleAgent:
     
     def reschedule_task(self):
         # 获取需要重新调度的任务
-        tasks,ids=self.rescheduler.get_tasks_to_reschedule()
-        # 获取大任务deadline
-        schedule=self.task_planner.schedule_task(self.rescheduler.user_id, tasks, self.rescheduler.reschedule_time, deadline)
-        self.task_planner.execute_schedule_with_applescript(schedule)
+        tasks_relation=self.rescheduler.get_tasks_to_reschedule()
 
-        # 更新小人物的起始结束时间
+        # 获取大任务deadline
+        for key in tasks_relation.keys():
+            print(tasks_relation[key])
+            parent_task=self.deadline_db.find_by_id(key,self.rescheduler.user_id,False)
+            deadline_timestamp=parent_task["Deadline"]
+            formatted_deadline = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(deadline_timestamp))
+            schedule=self.task_planner.schedule_task(self.rescheduler.user_id, tasks_relation[key][0], self.rescheduler.reschedule_time, formatted_deadline)
+            print(schedule)
+            self.task_planner.execute_schedule_with_applescript(schedule)
+
+            for task in schedule:
+                title=task["Task"]
+                _id=tasks_relation[key][1][title]
+                print(_id)
+                
+                start_datetime_str = f'{task["Date"]} {task["StartTime"]}'
+                end_datetime_str = f'{task["Date"]} {task["EndTime"]}'
+
+                start_timestamp = int(datetime.datetime.strptime(start_datetime_str, "%Y-%m-%d %H:%M").timestamp())
+                end_timestamp = int(datetime.datetime.strptime(end_datetime_str, "%Y-%m-%d %H:%M").timestamp())
+                self.deadline_db.update_rescheduled_task(self.rescheduler.user_id,_id,start_timestamp,end_timestamp,0,time_format="")
 
         return 
