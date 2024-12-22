@@ -181,7 +181,6 @@ class BaseModule:
             return None
 
     def transfer_data_to_prompt(self, data_list):
-
         if not isinstance(data_list, (list, dict)):
             raise ValueError("Input data_list must be a list or a dictionary.")
         if isinstance(data_list, dict):

@@ -17,12 +17,8 @@ class ScheduleMaker(BaseModule):
         self.habit_tracker = HabitTracker()
 
     def fetch_logs_by_deadline(self, deadline_str, days=7, limit=-1):
-        """
-        根据给定的截止日期查找与时段相似的日志数据。
-        """
         datalog_db = DailyLogDatabase("daily_logs")
         logs = datalog_db.find_by_deadline(deadline_str)
-        # 过滤最近 7 天内的数据
         end_date = datetime.now()
         start_date = end_date - timedelta(days=days)
         filtered_logs = [
@@ -33,9 +29,6 @@ class ScheduleMaker(BaseModule):
 
 
     def fetch_habits(self,task):
-        """
-        调用 HabitTracker 获取最近 7 天的习惯。
-        """
         try:
             return self.habit_tracker.get_habit_about_certain_task(user_id=1, task=task, top_k=5)
         except Exception as e:
@@ -44,13 +37,8 @@ class ScheduleMaker(BaseModule):
 
     def create_schedule(self, deadline, deadline_name):
         try:
-            # Step 1: 获取 Habit 数据
             habits = self.fetch_habits(deadline_name)
-
-            # Step 2: 根据 Deadline 获取日志
             logs = self.fetch_logs_by_deadline(deadline)
-
-            # Step 3: 构建提示内容
             user_prompt = (
                 schedule_prompt["USER_PROMPT"]
                 + f"\n**Deadline Name:** {deadline_name}"
@@ -61,8 +49,6 @@ class ScheduleMaker(BaseModule):
                 + "\n**Habits:** "
                 + json.dumps(habits, indent=2)
             )
-
-            # Step 4: 调用模型生成计划
             self.llm.set_model_name(MODEL_NAME)
             response = send_chat_prompts(schedule_prompt["USER_PROMPT"], user_prompt, self.llm, prefix="Schedule")
             return response

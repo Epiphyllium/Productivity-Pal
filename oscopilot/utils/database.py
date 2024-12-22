@@ -55,7 +55,6 @@ class DailyLogDatabase(Database):
         super().__init__()
         self.collection = self.db[collection_name]
 
-
     def insert_one_log(self, log, user_id, time_format = "", date_format =""):
         """
         Inserts a single log into the database.

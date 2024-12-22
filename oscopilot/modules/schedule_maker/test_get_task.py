@@ -11,10 +11,8 @@ user_id = 1
 reschedule_time = "2024-11-16 23:59"  # 当前时间作为重新调度的时间
 
 def test_get_tasks_to_reschedule():
-    # 初始化 Rescheduler
     rescheduler = Rescheduler(user_id, reschedule_time, schedule_prompt)
 
-    # 调用函数获取需要重新调度的任务
     try:
         tasks = rescheduler.get_tasks_to_reschedule()
         if tasks:
