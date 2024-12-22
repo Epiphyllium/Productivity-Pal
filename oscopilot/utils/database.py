@@ -4,7 +4,7 @@ from pymongo import MongoClient, ASCENDING, DESCENDING
 from dotenv import load_dotenv
 import os
 from sentence_transformers import SentenceTransformer
-from datetime import datetime,timedelta
+from datetime import datetime,timedelta,timezone
 
 load_dotenv(override=True)
 MODEL_NAME = os.getenv('MODEL_NAME')
@@ -42,7 +42,8 @@ class Database:
             raise
 
     def timestamp_to_date(self, timestamp, output_date_format):
-        date_obj = datetime.fromtimestamp(timestamp)
+        tz = timezone(timedelta(hours=8))
+        date_obj = datetime.fromtimestamp(timestamp, tz=tz)
         return date_obj.strftime(output_date_format)
 
     def date_to_timestamp(self, date_str, input_date_format):
@@ -182,160 +183,6 @@ class DailyLogDatabase(Database):
         ]
         logs = self._find(pipeline,need_to_prompt)
         return logs
-
-
-    #
-    # def fetch_recent_logs(self, user_id, top_k, days = -1, task=None):
-    #     dailylog_db = DailyLogDatabase("DailyLogs")
-    #     dailylog_db.collection.create_index([("Date", DESCENDING)])
-    #     dailylog_db.collection.create_index(["user_id"])
-    #     indexes = dailylog_db.collection.index_information()
-    #     # print(indexes)
-    #     query = {
-    #         "user_id": user_id
-    #     }
-    #     if days > 0:
-    #         end_date = datetime.now()
-    #         start_date = end_date - timedelta(days=days)
-    #         start_timestamp = int(start_date.timestamp())
-    #         end_timestamp = int(end_date.timestamp())
-    #         print(start_timestamp, end_timestamp)
-    #         query["Date"] = {"$gte": start_timestamp, "$lte": end_timestamp},
-    #     pipeline = []
-    #     if task is not None:
-    #         task_embedding = dailylog_db.get_embedding(task)
-    #         pipeline.append({
-    #             "$search": {
-    #                 "knnBeta": {
-    #                     "vector": task_embedding,
-    #                     "path": "embedding",
-    #                     "k": top_k
-    #                 }
-    #             }
-    #         })
-    #     pipeline.append({"$match": query})
-    #     pipeline.append({"$limit": top_k})
-    #     logs = dailylog_db._find(pipeline)
-    #     print(f"Find {len(logs)} logs")
-    #     return logs
-
-
-
-
-
-# class HabitDatabase(Database):
-#     def __init__(self, collection_name):
-#         super().__init__()
-#         self.collection = self.db[collection_name]
-#     def insert(self, data, user_id):
-#         i = 0
-#         insert_count = 0
-#         for item in data:
-#             i = i+1
-#             for key, value in item.items():
-#                 text = key + ": " + str(value)
-#             embedding = self.get_embedding(text)
-#             document = {**item, "user_id":user_id, "text": text, "embedding": embedding}
-#             try:
-#                 self.collection.insert_one(document)
-#                 insert_count = insert_count + 1
-#             except Exception as e:
-#                 print(f"Error inserting document {i}: {e}")
-#                 continue
-#         print(f"Inserted {insert_count} documents into the collection.")
-#
-#     def find_by_deadline(self, deadline_str):
-#         """
-#         Finds documents with a deadline matching or earlier than the specified deadline.
-#
-#         Parameters:
-#         deadline (str): The deadline date in ISO 8601 format (e.g., "2024-11-30").
-#
-#         Returns:
-#         list: A list of matching documents.
-#         """
-#         try:
-#             # 将截止日期字符串转换为 datetime 对象
-#             deadline = datetime.strptime(deadline_str, "%Y%m%d%H%M")
-#             now = datetime.now()
-#
-#             # 计算从当前时间到截止日期的持续时长（分钟）
-#             duration = (deadline - now).total_seconds() / 60
-#
-#             # 使用 MongoDB 聚合查询最大值和最小值
-#             aggregation_pipeline = [
-#                 {
-#                     "$addFields": {
-#                         "Duration": {
-#                             "$cond": [
-#                                 {"$and": [{"$ifNull": ["$Start Time", False]}, {"$ifNull": ["$End Time", False]}]},
-#                                 {
-#                                     "$divide": [
-#                                         {"$subtract": [
-#                                             {"$dateFromString": {"dateString": "$End Time", "format": "%Y%m%d%H%M"}},
-#                                             {"$dateFromString": {"dateString": "$Start Time", "format": "%Y%m%d%H%M"}}
-#                                         ]},
-#                                         60 * 1000  # 转换为分钟
-#                                     ]
-#                                 },
-#                                 None
-#                             ]
-#                         }
-#                     }
-#                 },
-#                 {"$match": {"Duration": {"$ne": None}}},  # 排除没有持续时间的记录
-#                 {
-#                     "$group": {
-#                         "_id": None,
-#                         "max_duration": {"$max": "$Duration"},
-#                         "min_duration": {"$min": "$Duration"},
-#                     }
-#                 }
-#             ]
-#
-#             duration_stats = list(self.collection.aggregate(aggregation_pipeline))
-#             if not duration_stats:
-#                 print("数据库中没有有效的持续时长记录。")
-#                 return []
-#
-#             max_duration = duration_stats[0]["max_duration"]
-#             min_duration = duration_stats[0]["min_duration"]
-#
-#             # 动态调整误差范围
-#             if duration < min_duration:
-#                 tolerance = max(10, min_duration * 0.1)
-#             elif duration > max_duration:
-#                 tolerance = max(10, max_duration * 0.1)
-#             else:
-#                 tolerance = max(10, duration * 0.2)
-#
-#             # 匹配持续时长与用户输入接近的记录
-#             results = []
-#             logs = self.collection.find()
-#             for log in logs:
-#                 if "Start Time" in log and "End Time" in log:
-#                     try:
-#                         start_time = datetime.strptime(log["Start Time"], "%Y%m%d%H%M")
-#                         end_time = datetime.strptime(log["End Time"], "%Y%m%d%H%M")
-#                         log_duration = (end_time - start_time).total_seconds() / 60
-#
-#                         # 打印调试信息
-#                         print(
-#                             f"记录 {log['Name']} 的时长: {log_duration:.2f} 分钟, 目标时长: {duration:.2f} 分钟, 容差范围: ±{tolerance:.2f} 分钟")
-#
-#                         # 判断持续时长是否在容许误差范围内
-#                         if abs(log_duration - duration) <= tolerance:
-#                             results.append(log)
-#                     except Exception as e:
-#                         print(f"Error processing log: {log}, Error: {e}")
-#                 else:
-#                     print(f"跳过无效记录: {log}")
-#
-#             return results
-#
-#         except Exception as e:
-#             print(f"Error during find_by_deadline: {e}")
-#             return []
 
 class DeadlineDatabase(Database):
     def __init__(self,collection_name):
@@ -914,82 +761,6 @@ class DeadlineDatabase(Database):
 
 
 if __name__ == '__main__':
-    database = DeadlineDatabase("Deadlines")
-    # deadlines = [
-    #     {
-    #         "Title": "OS-CoPilot Demo Presentation",
-    #         "Description": "Prepare a demo presentation for OS-CoPilot. Include coding, presentation slides, and a live demo.",
-    #         "Start Time" :"",
-    #         "Deadline": "202411251900",
-    #         "Subtasks": [],
-    #         "Parent Task": [],
-    #         "Status": 0,
-    #     },
-    #     {
-    #         "Title": "Data Mining Assignment2",
-    #         "Description": "3 subtasks: 1. Evaluate car sales data via Weka. 2. Assoication rule mining. 3. Clustering.",
-    #         "Start Time":"",
-    #         "Deadline": "202411272359",
-    #         "Subtasks": [],
-    #         "Parent Task": [],
-    #         "Status": 0,
-    #     },
-    #     {
-    #         "Title": "CV Reviewer",
-    #         "Description": "Review the CVs of the applicants for the Data Scientist position.",
-    #         "Start Time":"",
-    #         "Deadline": "202411301700",
-    #         "Subtasks": [],
-    #         "Parent Task": [],
-    #         "Status": 0,
-    #     },
-    #     {
-    #         "Title": "Weekend Getaway Planning",
-    #         "Description": "Plan and finalize the itinerary for a weekend getaway with friends. Book transportation and accommodation.",
-    #         "Startime":"",
-    #         "Deadline": "202412102000",
-    #         "Status": 0,
-    #         "Subtasks": [],
-    #         "Parent Task": [],
-    #     },
-    #     {
-    #         "Title": "Team Meeting Presentation",
-    #         "Description": "Prepare a brief presentation for the team's weekly sync. Include project updates and upcoming plans.",
-    #         "Start Time":"",
-    #         "Deadline": "202412051000",
-    #         "Subtasks": [],
-    #         "Parent Task": [],
-    #         "Status": 0,
-    #     },
-    #     {
-    #         "Title": "Christmas Holiday Planning",
-    #         "Description": "Plan the Christmas holiday activities, including gift shopping, travel arrangements, and dinner preparation.",
-    #         "Start Time":"",
-    #         "Deadline": "202412201800",
-    #         "Subtasks": [],
-    #         "Parent Task": [],
-    #         "Status": 0,
-    #     },
-    #     {
-    #         "Title": "Deep Learning Course Final Exam",
-    #         "Description": "The final examination on deep learning, including basic information, CNN, GNN, and RNN.",
-    #         "Start Time": "",
-    #         "Deadline": "202412141830",
-    #         "Subtasks": [],
-    #         "Parent Task": [],
-    #         "Status": 0,
-    #     }
-    # ]
-    # for deadline in deadlines:
-    #     id = database.insert_one_task(deadline, 1, 0)
-    #     print(id)
-
-    # deadlines_db = DeadlineDatabase("Deadlines")
-    # id = "67404416e8169705f9374a79"
-    # result = deadlines_db.find_by_id(id)
-    # print(result)
-    # uuid = deadlines_db.insert_one_task(deadline, 1, 0)
-
     deadlines_db = DeadlineDatabase("Deadlines")
     deadlines_db.update_rescheduled_task(2, "674199564453b485732c7734", "202411241200", "202411261300", 1, "%Y%m%d%H%M")
 
