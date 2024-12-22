@@ -8,7 +8,7 @@ from oscopilot.agents.task_schedule_agent import TaskScheduleAgent
 
 agent=TaskScheduleAgent()
 
-async def handle_websocket(websocket):  # 添加 path 参数
+async def handle_websocket(websocket):
     try:
         async for message in websocket:
             data = json.loads(message)
@@ -20,18 +20,18 @@ async def handle_websocket(websocket):  # 添加 path 参数
                 reDate=data["reDate"]+" 23:59:59"
                 agent.set_reschedule_time(user_id=3,reschedule_time=reDate)
                 agent.reschedule_task()
-            print("收到任务数据:")
-            print(f"任务名: {data['name']}")
-            print(f"任务描述: {data['description']}")
-            print(f"截止日期: {data['dueDate']}")
-            print(f"提醒时间: {data['reDate']}")          
+            print("Task Received:")
+            print(f"Task Name: {data['name']}")
+            print(f"Task Description: {data['description']}")
+            print(f"Deadline: {data['dueDate']}")
+            print(f"Reminder Time: {data['reDate']}")
             # 发送确认消息给客户端
             await websocket.send(json.dumps({"status": "success"}))
     except Exception as e:
         print(f"处理消息时出错: {e}")
 
 async def main():
-    print("WebSocket 服务器已启动，等待连接...")
+    print("WebSocket server is running, waiting for connection...")
     async with websockets.serve(handle_websocket, "localhost", 8080):
         await asyncio.Future()
 
@@ -39,4 +39,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        print("\n服务器已停止")
+        print("\nWebSocket server stopped.")

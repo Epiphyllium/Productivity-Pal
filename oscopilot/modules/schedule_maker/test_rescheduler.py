@@ -2,7 +2,7 @@ import json
 import unittest
 from datetime import datetime
 from oscopilot.modules.schedule_maker.rescheduler import Rescheduler
-from oscopilot.prompts.Schedule_Prompt import schedule_prompt
+from oscopilot.prompts.schedule_prompt import schedule_prompt
 from oscopilot.modules.habit_tracker.habit_tracker import HabitTracker
 
 

@@ -3,7 +3,7 @@ import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from oscopilot import BaseModule
-from oscopilot.prompts.Schedule_Prompt import schedule_prompt
+from oscopilot.prompts.schedule_prompt import schedule_prompt
 from oscopilot.utils.database import DailyLogDatabase
 from oscopilot.modules.habit_tracker.habit_tracker import HabitTracker
 from oscopilot.utils.utils import send_chat_prompts

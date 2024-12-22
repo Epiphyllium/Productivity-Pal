@@ -1,6 +1,6 @@
 import unittest
 from datetime import datetime
-from oscopilot.prompts.Schedule_Prompt import schedule_prompt
+from oscopilot.prompts.schedule_prompt import schedule_prompt
 from pymongo import MongoClient
 from oscopilot.modules.planner.task_planner import TaskPlanner
 from oscopilot.utils.database import DeadlineDatabase

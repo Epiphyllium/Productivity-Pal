@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 
 from oscopilot import BaseModule
-from oscopilot.prompts.Habit_Prompt import habit_prompt
+from oscopilot.prompts.habit_prompt import habit_prompt
 from oscopilot.utils.database import DailyLogDatabase
 from oscopilot.utils.utils import send_chat_prompts
 

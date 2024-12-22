@@ -1,14 +1,10 @@
 import json
-import os
-from datetime import datetime, timedelta
 from dotenv import load_dotenv
 from oscopilot import BaseModule
-from oscopilot.prompts.taskplan_pt import taskPlannerPrompt
-from oscopilot.utils.database import DailyLogDatabase
+from oscopilot.prompts.taskplan_prompt import taskPlannerPrompt
 from oscopilot.modules.habit_tracker.habit_tracker import HabitTracker
 from oscopilot.utils.utils import send_chat_prompts
-import re
-from add_events import AppleScript
+from oscopilot.modules.executor.add_events import AppleScript
 
 load_dotenv(override=True)
 # MODEL_NAME = os.getenv('CALENDAR_PLAN_ENDPOINT')

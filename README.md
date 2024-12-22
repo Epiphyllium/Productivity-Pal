@@ -1,35 +1,35 @@
-```
-pip install --upgrade 'volcengine-python-sdk[ark]'
-```
+# Prodctivity Pal
 
-API 这些在网站上看
-https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey?apikey=%7B%7D
+## Overview
 
-## mongoDB
-```shell
-python -m pip install "pymongo[srv]"
-pip install --quiet sentence-transformers pymongo einops
+Productivity pal now
 
-```
-参考文档
-https://cloud.mongodb.com/v2/66ab7c7c307c4319cb9c6bc5#/overview
-https://www.mongodb.com/zh-cn/docs/atlas/atlas-vector-search/create-embeddings/
+## Quick Start
 
-## Deadlines DataBase
-```jason
-{
-    "Title": "Task Title", # required
-    "Description": "Task Description", # optional
-    "Start Time": "Task Start Time", # timestamp, optional
-    "Deadline": "Task Deadline", # timestamp, required
-    "Subtasks": [], # if task is a parent task, this field will contain subtasks' _id, optional
-    "Parent Task": [], # if task is a subtask, this field will contain parent task's _id, required for subtasks
-    "Status": 0, # optional
-        for subtasks: default is 0. 0 - Incomplete, 1 - ongoing, 2 - completed, -1 - overdue
-        for parent tasks: default is 0. 0 - Not start yet, 10 - allocated, 20 - completed , -10 overdue
-    "user_id": 1, 
-    "Type": 0, # 0 for Task, 1 for Subtask
-}
+1. **Set Up Python Environment and Install Dependencies of OS-Copilot**
 
-```
+2. **Other Dependencies:**
+
+   ```shell
+   python -m pip install "pymongo[srv]"
+   pip install --quiet sentence-transformers pymongo einops
+   npm install electron
+   ```
+
+3. **Set OpenAI API Key:** Configure your OpenAI API key in .env
+
+4. **Set Mongodb Atlas:** Replace `<username>`, `<password>`, and `<cluster-url>` with your Atlas credentials in `CONNECTION_STRING` in .env
+
+   ```shell
+   CONNECTION_STRING = "mongodb+srv://<username>:<password>@<cluster-url>/myDatabase?retryWrites=true&w=majority"
+   ```
+
+5. **Start server and front-end interface**
+   ```shell
+   cd productivity_pal
+   python server.py #server
+   npm start #front-end interface
+   ```
+
+   
 

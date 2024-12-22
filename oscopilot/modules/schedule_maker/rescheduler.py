@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from pymongo import MongoClient
 from dotenv import load_dotenv
 from oscopilot import BaseModule
-from oscopilot.prompts.Schedule_Prompt import schedule_prompt
+from oscopilot.prompts.schedule_prompt import schedule_prompt
 from oscopilot.utils.database import DailyLogDatabase, DeadlineDatabase
 from oscopilot.modules.planner.task_planner import TaskPlanner
 from oscopilot.utils.utils import send_chat_prompts

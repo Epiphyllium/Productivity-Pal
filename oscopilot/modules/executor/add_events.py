@@ -12,10 +12,10 @@ class AppleScript():
         process = subprocess.Popen(['osascript', '-e', applescript], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         output, error = process.communicate()
         if process.returncode == 0:
-            print("操作成功!")
+            print("Script executed successfully")
             return output.decode().strip()
         else:
-            print(f"操作失败: {error.decode()}")
+            print(f"Script executed failed: {error.decode()}")
 
     def create_reminder_script(self,title, date, time):
         date_obj = datetime.strptime(date, "%Y-%m-%d")
@@ -44,13 +44,13 @@ class AppleScript():
         on createEvent(eventTitle, eventYear, eventMonth, eventDay, eventStartTime, eventEndTime)
             tell application "Calendar"
                 tell calendar "Home"
-                -- 设置开始日期
+                -- Set start date
                 set my_start_date to current date
                 set year of my_start_date to eventYear as integer
                 set month of my_start_date to eventMonth as integer
                 set day of my_start_date to eventDay as integer
                 
-                -- 解析开始时间
+                -- Parse start time
                 set start_hours to (text 1 thru 2 of eventStartTime) as integer
                 set start_minutes to (text 4 thru 5 of eventStartTime) as integer
                 if eventStartTime contains "PM" and start_hours ≠ 12 then
@@ -60,13 +60,13 @@ class AppleScript():
                 end if
                 set time of my_start_date to (start_hours * 3600 + start_minutes * 60)
                 
-                -- 设置结束日期
+                -- Set end date
                 set my_end_date to current date
                 set year of my_end_date to eventYear as integer
                 set month of my_end_date to eventMonth as integer
                 set day of my_end_date to eventDay as integer
                 
-                -- 解析结束时间
+                -- Parse end time
                 set end_hours to (text 1 thru 2 of eventEndTime) as integer
                 set end_minutes to (text 4 thru 5 of eventEndTime) as integer
                 if eventEndTime contains "PM" and end_hours ≠ 12 then
@@ -76,12 +76,12 @@ class AppleScript():
                 end if
                 set time of my_end_date to (end_hours * 3600 + end_minutes * 60)
                 
-                -- 检查时间逻辑
+                -- Check if start time is earlier than end time
                 if my_start_date ≥ my_end_date then
                     error "Start time must be earlier than end time."
                 end if
                 
-                -- 创建事件
+                -- Create event
                 make new event with properties {{summary:eventTitle, start date:my_start_date, end date:my_end_date}}
                 end tell
             end tell
@@ -98,8 +98,7 @@ class AppleScript():
         self.run_applescript(reminder_script)
         self.run_applescript(event_script)
 
-    # 入参是开始日期和结束日期，输出是 已完成的提醒事项 。输出需要split(", ")处理
-    # 获取指定时间完成的提醒事项，举例 2020-11-01 00:00:00 至  2024-11-30 23:59:59 内完成的
+    # Get the completed reminders within a specified time range
     def get_completed_reminders(self,start_time, end_time):
         start_time = datetime.strptime(start_time, "%Y-%m-%d").strftime("%Y-%m-%d 00:00:00")
         end_time = datetime.strptime(end_time, "%Y-%m-%d").strftime("%Y-%m-%d 23:59:59")
@@ -124,7 +123,7 @@ class AppleScript():
         '''
         return applescript
 
-    # 获取当前一周内过期未完成的提醒事项
+    # Get the uncompleted reminders within a specified time range
     def get_uncompleted_reminders(self):
         applescript = '''
         on get_overdue_incomplete_reminders()
@@ -172,13 +171,8 @@ class AppleScript():
         '''
         return applescript
 
-    # 获取日历被占用的事件和时间
+    # Get the calendar events between now and the specified time
     def get_calendar_events(self,deadline):
-        """
-        获取现在到指定时间之间的日历事件, 指定时间格式"2024-11-30 23:59:59"
-        会自动忽略占用一整天时间的事件, 例如24节气
-        """
-        # 举例 deadline="2024-11-30 23:59:59"
         get_busy_times_script = self.get_busy_times(deadline)
         output = self.run_applescript(get_busy_times_script)
         if output == None:
@@ -189,7 +183,7 @@ class AppleScript():
         while i<len(mid)-2:
             stDate,stDateTime = self.parse_custom_date_time(mid[i+1])
             edDate,edDateTime = self.parse_custom_date_time(mid[i+2])
-            # 如果开始时间和结束时间相同，且结束时间是2359，那么这个事件是全天事件，不需要提醒
+            # if the event is an all-day event, skip it
             if stDate==edDate and int(edDateTime)-int(stDateTime)==2359:
                 i+=3
                 continue
@@ -199,7 +193,7 @@ class AppleScript():
         return events
 
     def parse_custom_date_time(self,date_time_str):
-        # 提取日期和时间部分
+        # date_time_str = "2024年11月25日 下午2:00:00"
         match = re.match(r"(\d{4})年(\d{1,2})月(\d{1,2})日.*(\d{2}:\d{2}:\d{2})", date_time_str)
         if not match:
             raise ValueError("wrong date time format")
